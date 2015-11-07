@@ -1,7 +1,7 @@
 angular.module('Karela', []);
 
 angular.module('Karela')
-  .controller('TasksCtrl', function($scope) {
+  .controller('TasksCtrl', function($q) {
     var tasksCtrl = this;
     Parse.initialize("LWQ5NTjZA9AHKAI1VrWAFvsform7e2n56aUwZRi9", "YMNbi9lMYaaU27A4r1ra2QB1TKewfoxFEwelezoc");
     var Task = Parse.Object.extend("Task");
@@ -11,22 +11,43 @@ angular.module('Karela')
     };
 
     function fetchTasks() {
+      var differedQuery = $q.defer();
       var query = new Parse.Query(Task);
-
-      query.find({
-        success: function(data) {
+      query.find().then(function (data) {
+      	differedQuery.resolve(data);
+      }, function (error) {
+      	differedQuery.reject(data);
+      });
+      differedQuery.promise
+        .then(function (data) {
           tasksCtrl.tasks = [];
           angular.forEach(data, function(obj) {
             task = {};
             task.title = obj.get("title");
             task.description = obj.get("description");
             tasksCtrl.tasks.push(task);
-            $scope.$apply();
           });
-        }, error: function(data, error) {
-          console.log("Error fetching tasks: " + error.message);
-        }
-      });
+        })
+        .catch(function (error) {
+        	console.log("Error fetching tasks: " + error.message);
+        });
+
+      // var query = new Parse.Query(Task);
+      //
+      // query.find({
+      //   success: function(data) {
+      //     tasksCtrl.tasks = [];
+      //     angular.forEach(data, function(obj) {
+      //       task = {};
+      //       task.title = obj.get("title");
+      //       task.description = obj.get("description");
+      //       tasksCtrl.tasks.push(task);
+      //     });
+      //     $scope.$apply();
+      //   }, error: function(data, error) {
+      //     console.log("Error fetching tasks: " + error.message);
+      //   }
+      // });
     };
 
     tasksCtrl.addTask = function() {
