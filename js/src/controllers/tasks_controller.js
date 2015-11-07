@@ -11,5 +11,13 @@ angular.module('Karela')
       tasksCtrl.tasks = TaskService.fetch();
     };
 
+    tasksCtrl.deleteTask = function(task) {
+      var ind = tasksCtrl.tasks.indexOf(task);
+      if (ind > -1) {
+        tasksCtrl.tasks.splice(ind, 1);
+        TaskService.delete(task.parseObject);
+      }
+    };
+
     init();
   });

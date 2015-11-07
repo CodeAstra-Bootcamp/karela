@@ -1,5 +1,6 @@
 <section id="tasks">
   <article class="task" ng-repeat="task in tasksCtrl.tasks">
+    <button class="pull-right btn btn-sm btn-danger" ng-click="tasksCtrl.deleteTask(task)">Delete</button>
     <h3>{{task.title}}</h3>
     <p>{{task.description}}</p>
   </article>

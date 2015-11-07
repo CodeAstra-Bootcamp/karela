@@ -18,6 +18,16 @@ angular.module('Karela')
       });
     };
 
+    TaskService.delete = function(taskObj) {
+      taskObj.destroy({
+        success: function() {
+          console.log('Delete task successfully');
+        }, error: function(error) {
+          console.log('Error deleting task: ' + error.message);
+        }
+      });
+    };
+
     TaskService.fetch = function() {
       TaskService.tasks = [];
       var differedQuery = $q.defer();
@@ -33,6 +43,7 @@ angular.module('Karela')
             task = {};
             task.title = obj.get("title");
             task.description = obj.get("description");
+            task.parseObject = obj;
             TaskService.tasks.push(task);
           });
         })
