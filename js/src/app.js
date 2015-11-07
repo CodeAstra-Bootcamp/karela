@@ -2,6 +2,16 @@ angular.module('Karela', []);
 
 angular.module('Karela')
   .controller('TasksCtrl', function() {
-    var tasks = this;
-    tasks.title = "Tasks";
+    var tasksCtrl = this;
+    tasksCtrl.initializeNewTask = function() {
+      tasksCtrl.newTask = {};
+    };
+
+    tasksCtrl.addTask = function() {
+      tasksCtrl.tasks.push(tasksCtrl.newTask);
+      tasksCtrl.initializeNewTask();
+    };
+
+    tasksCtrl.initializeNewTask();
+    tasksCtrl.tasks = [];
   });
