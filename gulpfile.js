@@ -15,7 +15,9 @@ var jsFiles = [
   "./bower_components/angular-ui-router/release/angular-ui-router.js",
   "./js/src/app.js",
   "./js/src/config/routes.js",
+  "./js/src/services/authentication_service.js",
   "./js/src/services/task_service.js",
+  "./js/src/controllers/home_controller.js",
   "./js/src/controllers/tasks_controller.js",
   "./js/src/controllers/new_task_controller.js"
 ];

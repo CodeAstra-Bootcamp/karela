@@ -44853,14 +44853,14 @@ angular.module('Karela', ['ui.router']);
 
 angular.module('Karela')
   .config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
-    $urlRouterProvider.otherwise("/tasks/new");
+    $urlRouterProvider.otherwise("/");
     $stateProvider
-      // .state('home', {
-      //   url: "/",
-      //   templateUrl: "views/home.tmpl.html",
-      //   controller: "homeCtrl",
-      //   controllerAs: "home"
-      // })
+      .state('home', {
+        url: "/",
+        templateUrl: "views/home.tmpl.html",
+        controller: "HomeCtrl",
+        controllerAs: "homeCtrl"
+      })
       .state('tasks', {
         url: "/tasks",
         templateUrl: "views/tasks/index.tmpl.html",
@@ -44874,6 +44874,61 @@ angular.module('Karela')
         controllerAs: "newTaskCtrl"
       });
   }]);
+
+angular.module('Karela')
+  .service('AuthenticationService', function($state, $q) {
+    var AuthenticationService = this;
+
+    AuthenticationService.login = function(username, password) {
+      var differedQuery = $q.defer();
+      Parse.User.logIn(username, password)
+        .then(function (user) {
+        	differedQuery.resolve(user);
+        }, function (error) {
+        	differedQuery.reject(error);
+        });
+      differedQuery.promise
+        .then(function (user) {
+          console.log("Logged in as " + user.get("username"));
+          $state.go('tasks')
+        })
+        .catch(function (error) {
+        	console.log("Error logging in: " + error.message);
+        });
+    };
+
+    AuthenticationService.signup = function(username, password) {
+      Parse.User.signUp(username, password, null, {
+        success: function(user) {
+          console.log("Signedup as " + user.get("username"));
+        }, error: function(user, error) {
+          console.log("Error signing up: " + error.message);
+        }
+      });
+    };
+
+    AuthenticationService.logout = function() {
+      Parse.User.logOut().then(function() {
+        $state.go('tasks');
+      });
+    };
+
+    AuthenticationService.currentUser = function() {
+      Parse.User.current();
+    };
+
+    AuthenticationService.loggedIn = function() {
+      !!AuthenticationService.currentUser();
+    };
+
+    AuthenticationService.requireAuthentication = function() {
+      if (AuthenticationService.loggedIn()) {
+        return true;
+      } else {
+        $state.go('home');
+      }
+    }
+  });
 
 angular.module('Karela')
   .service('TaskService', function($q){
@@ -44933,8 +44988,48 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
-  .controller('TasksCtrl', function(TaskService) {
+  .controller('HomeCtrl', function(TaskService, $state, AuthenticationService) {
+    var homeCtrl = this;
+
+    function init() {
+      redirectIfLoggedIn();
+      homeCtrl.initializeForms();
+    };
+
+    function redirectIfLoggedIn() {
+      if (AuthenticationService.loggedIn()) {
+        $state.go('tasks');
+      }
+    };
+
+    homeCtrl.initializeForms = function() {
+      homeCtrl.loginUser = {};
+      homeCtrl.signupUser = {};
+    };
+
+    homeCtrl.login = function() {
+      var username = homeCtrl.loginUser.username,
+          password = homeCtrl.loginUser.password;
+      AuthenticationService.login(username, password);
+    };
+    homeCtrl.signup = function() {
+      var username = homeCtrl.signupUser.username,
+          password = homeCtrl.signupUser.password;
+      AuthenticationService.signup(username, password);
+    };
+
+    homeCtrl.logout = AuthenticationService.logout;
+
+    init();
+  });
+
+angular.module('Karela')
+  .controller('TasksCtrl', function(TaskService, AuthenticationService) {
     var tasksCtrl = this;
+
+    // AuthenticationService.requireAuthentication();
+
+    tasksCtrl.logout = AuthenticationService.logout;
 
     function init() {
       tasksCtrl.tasks = [];
@@ -44957,8 +45052,9 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
-  .controller('NewTaskCtrl', function(TaskService, $state) {
+  .controller('NewTaskCtrl', function(TaskService, $state, AuthenticationService) {
     var newTaskCtrl = this;
+    AuthenticationService.requireAuthentication();
 
     function init() {
       newTaskCtrl.initializeNewTask();

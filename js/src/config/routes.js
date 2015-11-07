@@ -1,13 +1,13 @@
 angular.module('Karela')
   .config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
-    $urlRouterProvider.otherwise("/tasks/new");
+    $urlRouterProvider.otherwise("/");
     $stateProvider
-      // .state('home', {
-      //   url: "/",
-      //   templateUrl: "views/home.tmpl.html",
-      //   controller: "homeCtrl",
-      //   controllerAs: "home"
-      // })
+      .state('home', {
+        url: "/",
+        templateUrl: "views/home.tmpl.html",
+        controller: "HomeCtrl",
+        controllerAs: "homeCtrl"
+      })
       .state('tasks', {
         url: "/tasks",
         templateUrl: "views/tasks/index.tmpl.html",
