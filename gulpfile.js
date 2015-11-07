@@ -12,7 +12,9 @@ var jsFiles = [
   "./bower_components/jquery/dist/jquery.js",
   "./bower_components/bootstrap/dist/js/bootstrap.js",
   "./bower_components/angular/angular.js",
-  "./js/src/app.js"
+  "./js/src/app.js",
+  "./js/src/services/task_service.js",
+  "./js/src/controllers/tasks_controller.js"
 ];
 
 gulp.task("sass", function () {

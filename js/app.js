@@ -40477,64 +40477,21 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
+Parse.initialize("LWQ5NTjZA9AHKAI1VrWAFvsform7e2n56aUwZRi9", "YMNbi9lMYaaU27A4r1ra2QB1TKewfoxFEwelezoc");
+
 angular.module('Karela', []);
 
 angular.module('Karela')
-  .controller('TasksCtrl', function($q) {
-    var tasksCtrl = this;
-    Parse.initialize("LWQ5NTjZA9AHKAI1VrWAFvsform7e2n56aUwZRi9", "YMNbi9lMYaaU27A4r1ra2QB1TKewfoxFEwelezoc");
-    var Task = Parse.Object.extend("Task");
+  .service('TaskService', function($q){
+    var TaskService = this;
 
-    tasksCtrl.initializeNewTask = function() {
-      tasksCtrl.newTask = {};
-    };
 
-    function fetchTasks() {
-      var differedQuery = $q.defer();
-      var query = new Parse.Query(Task);
-      query.find().then(function (data) {
-      	differedQuery.resolve(data);
-      }, function (error) {
-      	differedQuery.reject(data);
-      });
-      differedQuery.promise
-        .then(function (data) {
-          tasksCtrl.tasks = [];
-          angular.forEach(data, function(obj) {
-            task = {};
-            task.title = obj.get("title");
-            task.description = obj.get("description");
-            tasksCtrl.tasks.push(task);
-          });
-        })
-        .catch(function (error) {
-        	console.log("Error fetching tasks: " + error.message);
-        });
+    TaskService.taskClass = Parse.Object.extend("Task");
 
-      // var query = new Parse.Query(Task);
-      //
-      // query.find({
-      //   success: function(data) {
-      //     tasksCtrl.tasks = [];
-      //     angular.forEach(data, function(obj) {
-      //       task = {};
-      //       task.title = obj.get("title");
-      //       task.description = obj.get("description");
-      //       tasksCtrl.tasks.push(task);
-      //     });
-      //     $scope.$apply();
-      //   }, error: function(data, error) {
-      //     console.log("Error fetching tasks: " + error.message);
-      //   }
-      // });
-    };
-
-    tasksCtrl.addTask = function() {
-      tasksCtrl.tasks.push(tasksCtrl.newTask);
-
-      var task = new Task();
-      task.set("title", tasksCtrl.newTask.title);
-      task.set("description", tasksCtrl.newTask.description);
+    TaskService.create = function(title, description) {
+      var task = new TaskService.taskClass();
+      task.set("title", title);
+      task.set("description", description);
       task.save({
         success: function(obj) {
           console.log("Task saved successfully");
@@ -40543,9 +40500,58 @@ angular.module('Karela')
           console.log("Error saving task: " + error.message);
         }
       });
+    };
+
+    TaskService.fetch = function() {
+      TaskService.tasks = [];
+      var differedQuery = $q.defer();
+      var query = new Parse.Query(TaskService.taskClass);
+      query.find().then(function (data) {
+      	differedQuery.resolve(data);
+      }, function (error) {
+      	differedQuery.reject(data);
+      });
+      differedQuery.promise
+        .then(function (data) {
+          angular.forEach(data, function(obj) {
+            task = {};
+            task.title = obj.get("title");
+            task.description = obj.get("description");
+            TaskService.tasks.push(task);
+          });
+        })
+        .catch(function (error) {
+        	console.log("Error fetching tasks: " + error.message);
+        });
+
+      return TaskService.tasks;
+    };
+  });
+
+angular.module('Karela')
+  .controller('TasksCtrl', function(TaskService) {
+    var tasksCtrl = this;
+
+    function fetchTasks() {
+      tasksCtrl.tasks = TaskService.fetch();
+    };
+
+    function init() {
+      tasksCtrl.initializeNewTask();
+      fetchTasks();
+    };
+
+    tasksCtrl.initializeNewTask = function() {
+      tasksCtrl.newTask = {};
+    };
+
+    tasksCtrl.addTask = function() {
+      tasksCtrl.tasks.push(tasksCtrl.newTask);
+      TaskService.create(
+        tasksCtrl.newTask.title, tasksCtrl.newTask.description
+      );
       tasksCtrl.initializeNewTask();
     };
 
-    tasksCtrl.initializeNewTask();
-    fetchTasks();
+    init();
   });
