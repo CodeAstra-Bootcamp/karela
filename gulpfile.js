@@ -12,9 +12,12 @@ var jsFiles = [
   "./bower_components/jquery/dist/jquery.js",
   "./bower_components/bootstrap/dist/js/bootstrap.js",
   "./bower_components/angular/angular.js",
+  "./bower_components/angular-ui-router/release/angular-ui-router.js",
   "./js/src/app.js",
+  "./js/src/config/routes.js",
   "./js/src/services/task_service.js",
-  "./js/src/controllers/tasks_controller.js"
+  "./js/src/controllers/tasks_controller.js",
+  "./js/src/controllers/new_task_controller.js"
 ];
 
 gulp.task("sass", function () {
@@ -37,7 +40,7 @@ gulp.task('js', function() {
 
 gulp.task('watch', function() {
   gulp.watch('./css/src/*.scss', ['css']);
-  gulp.watch('./js/src/*.js', ['js']);
+  gulp.watch('./js/src/**/*.js', ['js']);
 });
 
 gulp.task('default', ['css', 'js', 'watch']);
