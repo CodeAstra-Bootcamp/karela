@@ -1,23 +1,16 @@
 angular.module('Karela')
-  .service('AuthenticationService', function($state, $q) {
+  .service('AuthenticationService', function($state) {
     var AuthenticationService = this;
 
     AuthenticationService.login = function(username, password) {
-      var differedQuery = $q.defer();
-      Parse.User.logIn(username, password)
-        .then(function (user) {
-        	differedQuery.resolve(user);
-        }, function (error) {
-        	differedQuery.reject(error);
-        });
-      differedQuery.promise
-        .then(function (user) {
+      Parse.User.logIn(username, password, {
+        success: function(user) {
           console.log("Logged in as " + user.get("username"));
           $state.go('tasks')
-        })
-        .catch(function (error) {
-        	console.log("Error logging in: " + error.message);
-        });
+        }, error: function(user, error) {
+          console.log("Error logging in: " + error.message);
+        }
+      });
     };
 
     AuthenticationService.signup = function(username, password) {
@@ -31,9 +24,7 @@ angular.module('Karela')
     };
 
     AuthenticationService.logout = function() {
-      Parse.User.logOut().then(function() {
-        $state.go('tasks');
-      });
+      Parse.User.logOut();
     };
 
     AuthenticationService.currentUser = function() {
@@ -43,12 +34,4 @@ angular.module('Karela')
     AuthenticationService.loggedIn = function() {
       !!AuthenticationService.currentUser();
     };
-
-    AuthenticationService.requireAuthentication = function() {
-      if (AuthenticationService.loggedIn()) {
-        return true;
-      } else {
-        $state.go('home');
-      }
-    }
   });
