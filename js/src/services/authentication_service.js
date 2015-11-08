@@ -17,6 +17,7 @@ angular.module('Karela')
       Parse.User.signUp(username, password, null, {
         success: function(user) {
           console.log("Signedup as " + user.get("username"));
+          $state.go('newTask')
         }, error: function(user, error) {
           console.log("Error signing up: " + error.message);
         }

@@ -44909,6 +44909,7 @@ angular.module('Karela')
       Parse.User.signUp(username, password, null, {
         success: function(user) {
           console.log("Signedup as " + user.get("username"));
+          $state.go('newTask')
         }, error: function(user, error) {
           console.log("Error signing up: " + error.message);
         }
@@ -44987,6 +44988,22 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
+  .controller('NavCtrl', function(AuthenticationService) {
+    var navCtrl = this;
+
+    navCtrl.loggedIn = AuthenticationService.loggedIn;
+    navCtrl.logout = AuthenticationService.logout;
+    navCtrl.username = function() {
+      var currentUser = AuthenticationService.currentUser();
+      if (currentUser) {
+        return currentUser.get("username");
+      } else {
+        return ""
+      }
+    }
+  });
+
+angular.module('Karela')
   .controller('HomeCtrl', function(TaskService, $state, AuthenticationService) {
     var homeCtrl = this;
 
@@ -45017,16 +45034,12 @@ angular.module('Karela')
       AuthenticationService.signup(username, password);
     };
 
-    homeCtrl.logout = AuthenticationService.logout;
-
     init();
   });
 
 angular.module('Karela')
-  .controller('TasksCtrl', function(TaskService, AuthenticationService) {
+  .controller('TasksCtrl', function(TaskService) {
     var tasksCtrl = this;
-
-    tasksCtrl.logout = AuthenticationService.logout;
 
     function init() {
       tasksCtrl.tasks = [];

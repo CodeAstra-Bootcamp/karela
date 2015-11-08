@@ -18,6 +18,7 @@ var jsFiles = [
   "./js/src/config/authorize.js",
   "./js/src/services/authentication_service.js",
   "./js/src/services/task_service.js",
+  "./js/src/controllers/nav_controller.js",
   "./js/src/controllers/home_controller.js",
   "./js/src/controllers/tasks_controller.js",
   "./js/src/controllers/new_task_controller.js"

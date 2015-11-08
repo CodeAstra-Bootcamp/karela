@@ -1,8 +1,6 @@
 angular.module('Karela')
-  .controller('TasksCtrl', function(TaskService, AuthenticationService) {
+  .controller('TasksCtrl', function(TaskService) {
     var tasksCtrl = this;
-
-    tasksCtrl.logout = AuthenticationService.logout;
 
     function init() {
       tasksCtrl.tasks = [];

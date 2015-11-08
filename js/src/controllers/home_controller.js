@@ -29,7 +29,5 @@ angular.module('Karela')
       AuthenticationService.signup(username, password);
     };
 
-    homeCtrl.logout = AuthenticationService.logout;
-
     init();
   });
