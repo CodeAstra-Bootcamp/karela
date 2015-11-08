@@ -1,7 +1,6 @@
 angular.module('Karela')
-  .controller('NewTaskCtrl', function(TaskService, $state, AuthenticationService) {
+  .controller('NewTaskCtrl', function(TaskService, $state) {
     var newTaskCtrl = this;
-    AuthenticationService.requireAuthentication();
 
     function init() {
       newTaskCtrl.initializeNewTask();

@@ -2,8 +2,6 @@ angular.module('Karela')
   .controller('TasksCtrl', function(TaskService, AuthenticationService) {
     var tasksCtrl = this;
 
-    // AuthenticationService.requireAuthentication();
-
     tasksCtrl.logout = AuthenticationService.logout;
 
     function init() {

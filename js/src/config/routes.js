@@ -6,18 +6,21 @@ angular.module('Karela')
         url: "/",
         templateUrl: "views/home.tmpl.html",
         controller: "HomeCtrl",
-        controllerAs: "homeCtrl"
+        controllerAs: "homeCtrl",
+        authenticate: false
       })
       .state('tasks', {
         url: "/tasks",
         templateUrl: "views/tasks/index.tmpl.html",
         controller: "TasksCtrl",
-        controllerAs: "tasksCtrl"
+        controllerAs: "tasksCtrl",
+        authenticate: true
       })
       .state('newTask', {
         url: "/tasks/new",
         templateUrl: "views/tasks/new.tmpl.html",
         controller: "NewTaskCtrl",
-        controllerAs: "newTaskCtrl"
+        controllerAs: "newTaskCtrl",
+        authenticate: true
       });
   }]);

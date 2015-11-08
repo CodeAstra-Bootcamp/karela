@@ -44859,42 +44859,50 @@ angular.module('Karela')
         url: "/",
         templateUrl: "views/home.tmpl.html",
         controller: "HomeCtrl",
-        controllerAs: "homeCtrl"
+        controllerAs: "homeCtrl",
+        authenticate: false
       })
       .state('tasks', {
         url: "/tasks",
         templateUrl: "views/tasks/index.tmpl.html",
         controller: "TasksCtrl",
-        controllerAs: "tasksCtrl"
+        controllerAs: "tasksCtrl",
+        authenticate: true
       })
       .state('newTask', {
         url: "/tasks/new",
         templateUrl: "views/tasks/new.tmpl.html",
         controller: "NewTaskCtrl",
-        controllerAs: "newTaskCtrl"
+        controllerAs: "newTaskCtrl",
+        authenticate: true
       });
   }]);
 
 angular.module('Karela')
-  .service('AuthenticationService', function($state, $q) {
+  .run(function ($rootScope, $state, AuthenticationService) {
+    $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
+      if (toState.authenticate && !AuthenticationService.loggedIn()){
+        // debugger
+        // User isn’t authenticated
+        $state.transitionTo("home");
+        event.preventDefault();
+      }
+    });
+  });
+
+angular.module('Karela')
+  .service('AuthenticationService', function($state) {
     var AuthenticationService = this;
 
     AuthenticationService.login = function(username, password) {
-      var differedQuery = $q.defer();
-      Parse.User.logIn(username, password)
-        .then(function (user) {
-        	differedQuery.resolve(user);
-        }, function (error) {
-        	differedQuery.reject(error);
-        });
-      differedQuery.promise
-        .then(function (user) {
+      Parse.User.logIn(username, password, {
+        success: function(user) {
           console.log("Logged in as " + user.get("username"));
           $state.go('tasks')
-        })
-        .catch(function (error) {
-        	console.log("Error logging in: " + error.message);
-        });
+        }, error: function(user, error) {
+          console.log("Error logging in: " + error.message);
+        }
+      });
     };
 
     AuthenticationService.signup = function(username, password) {
@@ -44908,26 +44916,17 @@ angular.module('Karela')
     };
 
     AuthenticationService.logout = function() {
-      Parse.User.logOut().then(function() {
-        $state.go('tasks');
-      });
+      Parse.User.logOut();
+      $state.go('home');
     };
 
     AuthenticationService.currentUser = function() {
-      Parse.User.current();
+      return Parse.User.current();
     };
 
     AuthenticationService.loggedIn = function() {
-      !!AuthenticationService.currentUser();
+      return !!AuthenticationService.currentUser();
     };
-
-    AuthenticationService.requireAuthentication = function() {
-      if (AuthenticationService.loggedIn()) {
-        return true;
-      } else {
-        $state.go('home');
-      }
-    }
   });
 
 angular.module('Karela')
@@ -45027,8 +45026,6 @@ angular.module('Karela')
   .controller('TasksCtrl', function(TaskService, AuthenticationService) {
     var tasksCtrl = this;
 
-    // AuthenticationService.requireAuthentication();
-
     tasksCtrl.logout = AuthenticationService.logout;
 
     function init() {
@@ -45052,9 +45049,8 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
-  .controller('NewTaskCtrl', function(TaskService, $state, AuthenticationService) {
+  .controller('NewTaskCtrl', function(TaskService, $state) {
     var newTaskCtrl = this;
-    AuthenticationService.requireAuthentication();
 
     function init() {
       newTaskCtrl.initializeNewTask();

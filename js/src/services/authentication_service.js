@@ -25,13 +25,14 @@ angular.module('Karela')
 
     AuthenticationService.logout = function() {
       Parse.User.logOut();
+      $state.go('home');
     };
 
     AuthenticationService.currentUser = function() {
-      Parse.User.current();
+      return Parse.User.current();
     };
 
     AuthenticationService.loggedIn = function() {
-      !!AuthenticationService.currentUser();
+      return !!AuthenticationService.currentUser();
     };
   });
