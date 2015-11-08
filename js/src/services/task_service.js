@@ -1,5 +1,5 @@
 angular.module('Karela')
-  .service('TaskService', function($q){
+  .service('TaskService', function($q, AuthenticationService){
     var TaskService = this;
 
     TaskService.taskClass = Parse.Object.extend("Task");
@@ -8,6 +8,7 @@ angular.module('Karela')
       var task = new TaskService.taskClass();
       task.set("title", title);
       task.set("description", description);
+      task.set("user", AuthenticationService.currentUser());
       task.save({
         success: function(obj) {
           console.log("Task saved successfully");
@@ -32,10 +33,11 @@ angular.module('Karela')
       TaskService.tasks = [];
       var differedQuery = $q.defer();
       var query = new Parse.Query(TaskService.taskClass);
+      query.equalTo("user", AuthenticationService.currentUser());
       query.find().then(function (data) {
       	differedQuery.resolve(data);
       }, function (error) {
-      	differedQuery.reject(data);
+      	differedQuery.reject(error);
       });
       differedQuery.promise
         .then(function (data) {
