@@ -13,7 +13,7 @@ var jsFiles = [
   "./bower_components/bootstrap/dist/js/bootstrap.js",
   "./bower_components/angular/angular.js",
   "./bower_components/angular-ui-router/release/angular-ui-router.js",
-  "./js/src/app.js",
+  "./js/src/application.js",
   "./js/src/config/routes.js",
   "./js/src/config/authorize.js",
   "./js/src/services/authentication_service.js",

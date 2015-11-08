@@ -9,7 +9,7 @@ angular.module('Karela')
       if (currentUser) {
         return currentUser.get("username");
       } else {
-        return ""
+        return "";
       }
     }
   });
