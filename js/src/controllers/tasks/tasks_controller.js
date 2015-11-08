@@ -1,14 +1,16 @@
 angular.module('Karela')
-  .controller('TasksCtrl', function(TaskService) {
+  .controller('TasksCtrl', function(TaskService, $stateParams) {
     var tasksCtrl = this;
 
+
     function init() {
+      tasksCtrl.project = ProjectService.find($stateParams.projectId);
       tasksCtrl.tasks = [];
       fetchTasks();
     };
 
     function fetchTasks() {
-      tasksCtrl.tasks = TaskService.fetch();
+      tasksCtrl.tasks = TaskService.fetch(tasksCtrl.project);
     };
 
     tasksCtrl.deleteTask = function(task) {

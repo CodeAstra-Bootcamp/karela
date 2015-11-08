@@ -44862,15 +44862,29 @@ angular.module('Karela')
         controllerAs: "homeCtrl",
         authenticate: false
       })
-      .state('tasks', {
-        url: "/tasks",
+      .state('projects', {
+        url: "/projects",
+        templateUrl: "views/projects/index.tmpl.html",
+        controller: "ProjectsCtrl",
+        controllerAs: "projectsCtrl",
+        authenticate: true
+      })
+      .state('newProject', {
+        url: "/projects/new",
+        templateUrl: "views/projects/new.tmpl.html",
+        controller: "NewProjectCtrl",
+        controllerAs: "newProjectCtrl",
+        authenticate: true
+      })
+      .state('projects.tasks', {
+        url: "/:projectId/tasks",
         templateUrl: "views/tasks/index.tmpl.html",
         controller: "TasksCtrl",
         controllerAs: "tasksCtrl",
         authenticate: true
       })
-      .state('newTask', {
-        url: "/tasks/new",
+      .state('projects.newTask', {
+        url: "/:projectId/tasks/new",
         templateUrl: "views/tasks/new.tmpl.html",
         controller: "NewTaskCtrl",
         controllerAs: "newTaskCtrl",
@@ -44896,7 +44910,7 @@ angular.module('Karela')
       Parse.User.logIn(username, password, {
         success: function(user) {
           console.log("Logged in as " + user.get("username"));
-          $state.go('tasks')
+          $state.go('projects')
         }, error: function(user, error) {
           console.log("Error logging in: " + error.message);
         }
@@ -44907,7 +44921,7 @@ angular.module('Karela')
       Parse.User.signUp(username, password, null, {
         success: function(user) {
           console.log("Signedup as " + user.get("username"));
-          $state.go('newTask')
+          $state.go('newProject')
         }, error: function(user, error) {
           console.log("Error signing up: " + error.message);
         }
@@ -44929,16 +44943,98 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
+  .service('ProjectService', function($state, $q, AuthenticationService){
+    var ProjectService = this;
+
+    ProjectService.projectClass = Parse.Object.extend("Project");
+
+    ProjectService.create = function(title, description) {
+      var project = new ProjectService.projectClass();
+      project.set("title", title);
+      project.set("description", description);
+      project.set("user", AuthenticationService.currentUser());
+      project.save({
+        success: function(obj) {
+          console.log("Project saved successfully");
+          $state.go('projects.newTask', {projectId: obj.id});
+        },
+        error: function(obj, error) {
+          console.log("Error saving project: " + error.message);
+        }
+      });
+    };
+
+    ProjectService.delete = function(projectObj) {
+      projectObj.destroy({
+        success: function() {
+          console.log('Delete project successfully');
+        }, error: function(error) {
+          console.log('Error deleting project: ' + error.message);
+        }
+      });
+    };
+
+    ProjectService.find = function(projectId) {
+      ProjectService.project = {};
+      var differedQuery = $q.defer();
+      var query = new Parse.Query(ProjectService.projectClass);
+      query.equalTo("objectId", projectId);
+      query.first().then(function (data) {
+      	differedQuery.resolve(data);
+      }, function (error) {
+      	differedQuery.reject(error);
+      });
+      differedQuery.promise
+        .then(function (data) {
+          ProjectService.project = data;
+        })
+        .catch(function (error) {
+        	console.log("Error fetching projects: " + error.message);
+        });
+
+      return ProjectService.project;
+    };
+
+    ProjectService.fetch = function() {
+      ProjectService.projects = [];
+      var differedQuery = $q.defer();
+      var query = new Parse.Query(ProjectService.projectClass);
+      query.equalTo("user", AuthenticationService.currentUser());
+      query.find().then(function (data) {
+      	differedQuery.resolve(data);
+      }, function (error) {
+      	differedQuery.reject(error);
+      });
+      differedQuery.promise
+        .then(function (data) {
+          angular.forEach(data, function(obj) {
+            project = {};
+            project.title = obj.get("title");
+            project.description = obj.get("description");
+            project.parseObject = obj;
+            ProjectService.projects.push(project);
+          });
+        })
+        .catch(function (error) {
+        	console.log("Error fetching projects: " + error.message);
+        });
+
+      return ProjectService.projects;
+    };
+  });
+
+angular.module('Karela')
   .service('TaskService', function($q, AuthenticationService){
     var TaskService = this;
 
     TaskService.taskClass = Parse.Object.extend("Task");
 
-    TaskService.create = function(title, description) {
+    TaskService.create = function(title, description, project) {
       var task = new TaskService.taskClass();
       task.set("title", title);
       task.set("description", description);
       task.set("user", AuthenticationService.currentUser());
+      task.set("project", project);
       task.save({
         success: function(obj) {
           console.log("Task saved successfully");
@@ -44959,11 +45055,11 @@ angular.module('Karela')
       });
     };
 
-    TaskService.fetch = function() {
+    TaskService.fetch = function(project) {
       TaskService.tasks = [];
       var differedQuery = $q.defer();
       var query = new Parse.Query(TaskService.taskClass);
-      query.equalTo("user", AuthenticationService.currentUser());
+      query.equalTo("project", project);
       query.find().then(function (data) {
       	differedQuery.resolve(data);
       }, function (error) {
@@ -45014,7 +45110,7 @@ angular.module('Karela')
 
     function redirectIfLoggedIn() {
       if (AuthenticationService.loggedIn()) {
-        $state.go('tasks');
+        $state.go('projects');
       }
     };
 
@@ -45038,16 +45134,64 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
-  .controller('TasksCtrl', function(TaskService) {
-    var tasksCtrl = this;
+  .controller('ProjectsCtrl', function(ProjectService) {
+    var projectsCtrl = this;
 
     function init() {
+      projectsCtrl.projects = [];
+      fetchProjects();
+    };
+
+    function fetchProjects() {
+      projectsCtrl.projects = ProjectService.fetch();
+    };
+
+    projectsCtrl.deleteProject = function(project) {
+      var ind = projectsCtrl.projects.indexOf(project);
+      if (ind > -1) {
+        projectsCtrl.projects.splice(ind, 1);
+        ProjectService.delete(project.parseObject);
+      }
+    };
+
+    init();
+  });
+
+angular.module('Karela')
+  .controller('NewProjectCtrl', function(ProjectService, $state) {
+    var newProjectCtrl = this;
+
+    function init() {
+      newProjectCtrl.initializeNewProject();
+    };
+
+    newProjectCtrl.initializeNewProject = function() {
+      newProjectCtrl.newProject = {};
+    };
+
+    newProjectCtrl.addProject = function() {
+      var project = ProjectService.create(
+        newProjectCtrl.newProject.title, newProjectCtrl.newProject.description
+      );
+      newProjectCtrl.initializeNewProject();
+    };
+
+    init();
+  });
+
+angular.module('Karela')
+  .controller('TasksCtrl', function(TaskService, $stateParams) {
+    var tasksCtrl = this;
+
+
+    function init() {
+      tasksCtrl.project = ProjectService.find($stateParams.projectId);
       tasksCtrl.tasks = [];
       fetchTasks();
     };
 
     function fetchTasks() {
-      tasksCtrl.tasks = TaskService.fetch();
+      tasksCtrl.tasks = TaskService.fetch(tasksCtrl.project);
     };
 
     tasksCtrl.deleteTask = function(task) {
@@ -45062,10 +45206,11 @@ angular.module('Karela')
   });
 
 angular.module('Karela')
-  .controller('NewTaskCtrl', function(TaskService, $state) {
+  .controller('NewTaskCtrl', function(TaskService, $state, $stateParams) {
     var newTaskCtrl = this;
 
     function init() {
+      newTaskCtrl.project = ProjectService.find($stateParams.projectId);
       newTaskCtrl.initializeNewTask();
     };
 
@@ -45075,7 +45220,7 @@ angular.module('Karela')
 
     newTaskCtrl.addTask = function() {
       TaskService.create(
-        newTaskCtrl.newTask.title, newTaskCtrl.newTask.description
+        newTaskCtrl.newTask.title, newTaskCtrl.newTask.description, newTaskCtrl.project
       );
       newTaskCtrl.initializeNewTask();
       $state.go('tasks')

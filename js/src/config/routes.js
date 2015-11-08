@@ -9,15 +9,29 @@ angular.module('Karela')
         controllerAs: "homeCtrl",
         authenticate: false
       })
-      .state('tasks', {
-        url: "/tasks",
+      .state('projects', {
+        url: "/projects",
+        templateUrl: "views/projects/index.tmpl.html",
+        controller: "ProjectsCtrl",
+        controllerAs: "projectsCtrl",
+        authenticate: true
+      })
+      .state('newProject', {
+        url: "/projects/new",
+        templateUrl: "views/projects/new.tmpl.html",
+        controller: "NewProjectCtrl",
+        controllerAs: "newProjectCtrl",
+        authenticate: true
+      })
+      .state('projects.tasks', {
+        url: "/:projectId/tasks",
         templateUrl: "views/tasks/index.tmpl.html",
         controller: "TasksCtrl",
         controllerAs: "tasksCtrl",
         authenticate: true
       })
-      .state('newTask', {
-        url: "/tasks/new",
+      .state('projects.newTask', {
+        url: "/:projectId/tasks/new",
         templateUrl: "views/tasks/new.tmpl.html",
         controller: "NewTaskCtrl",
         controllerAs: "newTaskCtrl",

@@ -4,11 +4,12 @@ angular.module('Karela')
 
     TaskService.taskClass = Parse.Object.extend("Task");
 
-    TaskService.create = function(title, description) {
+    TaskService.create = function(title, description, project) {
       var task = new TaskService.taskClass();
       task.set("title", title);
       task.set("description", description);
       task.set("user", AuthenticationService.currentUser());
+      task.set("project", project);
       task.save({
         success: function(obj) {
           console.log("Task saved successfully");
@@ -29,11 +30,11 @@ angular.module('Karela')
       });
     };
 
-    TaskService.fetch = function() {
+    TaskService.fetch = function(project) {
       TaskService.tasks = [];
       var differedQuery = $q.defer();
       var query = new Parse.Query(TaskService.taskClass);
-      query.equalTo("user", AuthenticationService.currentUser());
+      query.equalTo("project", project);
       query.find().then(function (data) {
       	differedQuery.resolve(data);
       }, function (error) {

@@ -17,11 +17,14 @@ var jsFiles = [
   "./js/src/config/routes.js",
   "./js/src/config/authorize.js",
   "./js/src/services/authentication_service.js",
+  "./js/src/services/project_service.js",
   "./js/src/services/task_service.js",
   "./js/src/controllers/nav_controller.js",
   "./js/src/controllers/home_controller.js",
-  "./js/src/controllers/tasks_controller.js",
-  "./js/src/controllers/new_task_controller.js"
+  "./js/src/controllers/projects/projects_controller.js",
+  "./js/src/controllers/projects/new_project_controller.js",
+  "./js/src/controllers/tasks/tasks_controller.js",
+  "./js/src/controllers/tasks/new_task_controller.js"
 ];
 
 gulp.task("sass", function () {

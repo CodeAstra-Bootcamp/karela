@@ -9,7 +9,7 @@ angular.module('Karela')
 
     function redirectIfLoggedIn() {
       if (AuthenticationService.loggedIn()) {
-        $state.go('tasks');
+        $state.go('projects');
       }
     };
 
